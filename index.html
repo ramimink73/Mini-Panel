@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Mini Panel</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="button-container">
+			<fieldset class="button-group" id="top-btn-group" style="width: 28em">
+				<div class="legend"><span>Mini Panel</span></div>
+				<label class="checkboxControl3">
+					<input id="P_1" type="checkbox" data-top-id="1" />
+					<div></div>
+					<span class="indicator"></span>
+					<span class="label">Button 1</span>
+				</label>
+				<label class="checkboxControl3">
+					<input id="P_2" type="checkbox" data-top-id="2" />
+					<div></div>
+					<span class="indicator"></span>
+					<span class="label">Button 2</span>
+				</label>
+				<label class="checkboxControl4">
+					<input id="P_3" type="checkbox" data-id="power" />
+					<div></div>
+					<span class="label">Button 3</span>
+					<span class="indicator" id="last"></span>
+					<span class="label2">Power</span>
+				</label>
+				<label class="checkboxControl4">
+					<input id="P_3" type="checkbox" data-id="control" />
+					<div></div>
+					<span class="label">Button 4</span>
+					<span class="label3">Control Lamp</span>
+				</label>
+			</fieldset>
+		</div>
+		<script>
+			const state = {
+				power: false,
+				control: false,
+				progress: [],
+			}
+
+			const power = document.querySelector('[data-id="power"]')
+			const btns = document.querySelectorAll('[data-top-id]')
+			const btn = document.querySelector('.button-group')
+			const lastIndicator = document.getElementById('last')
+			const control = document.querySelector('[data-id="control"]')
+
+			blockUnblockButtons(state.power) // init
+
+			function toggleButton(e) {
+				const target = e.target
+				const id = target.getAttribute('data-top-id')
+				const index = state.progress.indexOf(id)
+
+				if (id && index == -1 && target.checked) {
+					state.progress.push(id)
+					console.log(state.progress)
+				} else if (id && index != -1 && !target.checked) {
+					state.progress.splice(index, 1)
+					console.log(state.progress)
+				}
+
+				if (state.progress.length == 2) {
+					if (!lastIndicator.classList.contains('power-on')) {
+						lastIndicator.classList.add('power-on')
+					}
+				} else {
+					if (lastIndicator.classList.contains('power-on')) {
+						lastIndicator.classList.remove('power-on')
+					}
+				}
+			}
+
+			btn.addEventListener('click', toggleButton)
+
+			function blockUnblockButtons(power) {
+				if (power) {
+					btns.forEach(btn => {
+						if (btn.getAttribute('disabled')) {
+							btn.removeAttribute('disabled')
+						}
+					})
+					console.log('buttons unlocked')
+				} else {
+					btns.forEach(btn => {
+						if (btn.checked) {
+							btn.click()
+						}
+						if (!btn.getAttribute('disabled')) {
+							btn.setAttribute('disabled', true)
+						}
+					})
+					console.log('buttons blocked')
+				}
+			}
+
+			power.addEventListener('click', e => {
+				state.power = power.checked
+				state.control = power.checked
+
+				if (!power.checked) {
+					state.progress = []
+					if (control.checked) control.click()
+				}
+
+				blockUnblockButtons(state.power)
+			})
+
+			control.addEventListener('click', e => {
+				state.control = control.checked
+
+				state.power = control.checked
+
+				if (control.checked) {
+					if (!power.checked) {
+						power.click()
+					}
+					if (!state.progress.includes('1')) state.progress.push('1')
+					if (!state.progress.includes('2')) state.progress.push('2')
+					state.progress.forEach(id => {
+						const btn = document.querySelector(`[data-top-id="${id}"]`)
+						if (!btn.checked) {
+							btn.click()
+						}
+					})
+				} else {
+					power.click()
+					state.progress = []
+				}
+			})
+		</script>
+	</body>
+</html>
